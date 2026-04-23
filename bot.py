@@ -2,6 +2,7 @@
 # All rights reserved.
 
 import os
+import sys
 import telebot
 import httpx
 from google import genai
@@ -12,8 +13,15 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip('/')
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 
-if not all([TOKEN, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY]):
-    raise SystemExit("ENV kosong. Set BOT_TOKEN, GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY di Railway")
+missing = [v for v, k in {
+    "BOT_TOKEN": TOKEN,
+    "GEMINI_API_KEY": GEMINI_KEY,
+    "SUPABASE_URL": SUPABASE_URL,
+    "SUPABASE_KEY": SUPABASE_KEY
+}.items() if not k]
+
+if missing:
+    raise SystemExit(f"ENV KOSONG: {', '.join(missing)}. Set di Railway Variables")
 
 bot = telebot.TeleBot(TOKEN)
 client = genai.Client(api_key=GEMINI_KEY)
@@ -25,7 +33,7 @@ SB_HEADERS = {
 }
 COPYRIGHT = "\n\n© 2026 Zyura</>"
 
-# ===== SUPABASE HELPER PAKE HTTPX =====
+# ===== SUPABASE HELPER =====
 def sb_get_user(user_id):
     url = f"{SUPABASE_URL}/rest/v1/users?id=eq.{user_id}&select=*"
     r = httpx.get(url, headers=SB_HEADERS, timeout=10)
@@ -63,17 +71,26 @@ def cek_poin(message):
     else:
         bot.reply_to(message, f"Kamu belum terdaftar. /start dulu{COPYRIGHT}")
 
+@bot.message_handler(commands=['models'])
+def list_models(message):
+    try:
+        models = [m.name.replace('models/', '') for m in client.models.list()]
+        text = "Model aktif:\n" + "\n".join(models)
+        bot.reply_to(message, text[:4000])
+    except Exception as e:
+        bot.reply_to(message, f"Error: {e}{COPYRIGHT}")
+
 @bot.message_handler(func=lambda msg: True)
 def chat_ai(message):
     try:
-        sb_add_poin(message.from_user.id, 1) # +1 poin tiap chat
+        sb_add_poin(message.from_user.id, 1)
         response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.0-flash",
             contents=message.text
         )
         bot.reply_to(message, response.text + COPYRIGHT)
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"ERROR GEMINI: {e}")
         bot.reply_to(message, f"Error Gemini: {e}{COPYRIGHT}")
 
 print("Bot AI jalan di Railway...")
