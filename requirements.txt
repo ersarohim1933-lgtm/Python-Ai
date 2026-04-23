@@ -1,3 +1,4 @@
-pyTelegramBotAPI
-supabase
-google-genai
+pyTelegramBotAPI==4.25.0
+supabase==2.10.0
+google-genai==0.8.0
+python-dotenv==1.0.1
