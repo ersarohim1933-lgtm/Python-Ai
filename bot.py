@@ -44,7 +44,6 @@ def chat_ai(message):
     model="gemini-1.5-flash",  # ganti dari "gemini-pro" ke ini
     contents=message.text
         )
-        )
         user_data = supabase.table('users').select("poin").eq('id', user_id).execute()
         if user_data.data:
             poin_baru = user_data.data[0]['poin'] + 1
