@@ -54,4 +54,5 @@ def chat_ai(message):
         bot.reply_to(message, f"Waduh AI-nya lagi error.{COPYRIGHT}")
 
 print("Bot AI jalan di Railway...")
-bot.infinity_polling()
+bot.remove_webhook()
+bot.infinity_polling(skip_pending=True)
