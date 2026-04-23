@@ -15,7 +15,7 @@ bot = telebot.TeleBot(TOKEN)
 client = genai.Client(api_key=GEMINI_KEY) # cara baru
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-COPYRIGHT = "\n\n_© 2026 Zyura</>_"
+COPYRIGHT = "\n\n© 2026 Zyura</>"
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -41,7 +41,7 @@ def chat_ai(message):
         user_id = message.from_user.id
         bot.send_chat_action(message.chat.id, 'typing')
         response = client.models.generate_content(
-            model="gemini-1.5-pro-latest",
+            model="gemini-pro",
             contents=message.text
         )
         user_data = supabase.table('users').select("poin").eq('id', user_id).execute()
