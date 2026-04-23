@@ -3,7 +3,7 @@
 
 import telebot
 import os
-from google import genai
+from google import genai # ini yg bener
 from supabase import create_client, Client
 
 TOKEN = os.environ.get("BOT_TOKEN")
@@ -15,7 +15,7 @@ bot = telebot.TeleBot(TOKEN)
 client = genai.Client(api_key=GEMINI_KEY) # cara baru
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-COPYRIGHT = "\n\n_© 2026 Nama Zyura</>"
+COPYRIGHT = "\n\n_© 2026 Zyura</>_"
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -40,22 +40,18 @@ def chat_ai(message):
     try:
         user_id = message.from_user.id
         bot.send_chat_action(message.chat.id, 'typing')
-
-        # Cara baru pake google-genai
         response = client.models.generate_content(
             model="gemini-1.5-flash",
             contents=message.text
         )
-
         user_data = supabase.table('users').select("poin").eq('id', user_id).execute()
         if user_data.data:
             poin_baru = user_data.data[0]['poin'] + 1
             supabase.table('users').update({"poin": poin_baru}).eq('id', user_id).execute()
-
         bot.reply_to(message, response.text + COPYRIGHT)
     except Exception as e:
-        print(e)
-        bot.reply_to(message, f"Waduh AI-nya lagi error. Coba lagi 1 menit ya.{COPYRIGHT}")
+        print(f"GEMINI ERROR: {e}")
+        bot.reply_to(message, f"Waduh AI-nya lagi error.{COPYRIGHT}")
 
-print("Bot AI jalan di Hugging Face Spaces...")
-bot.infinity_polling(timeout=10, long_polling_timeout=5)
+print("Bot AI jalan di Railway...")
+bot.infinity_polling()
