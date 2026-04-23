@@ -41,7 +41,7 @@ def chat_ai(message):
         user_id = message.from_user.id
         bot.send_chat_action(message.chat.id, 'typing')
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-pro-latest",
             contents=message.text
         )
         user_data = supabase.table('users').select("poin").eq('id', user_id).execute()
